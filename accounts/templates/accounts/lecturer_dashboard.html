@@ -1,0 +1,119 @@
+{% extends 'base.html' %}
+{% block title %}Lecturer Dashboard — InternTrack{% endblock %}
+{% block content %}
+
+<div class="page-header flex justify-between items-center">
+  <div>
+    <h1>Lecturer Dashboard</h1>
+    <p>Monitor and evaluate your assigned students</p>
+  </div>
+  <a href="{% url 'all_evaluations' %}" class="btn btn-sm btn-outline">View All Evaluations</a>
+</div>
+
+<!-- Statistics Overview -->
+<div class="stats-grid mb-4">
+  <div class="stat-card accent">
+    <div class="label">My Students</div>
+    <div class="value">{{ students.count }}</div>
+  </div>
+  <div class="stat-card warning">
+    <div class="label">Pending Assessments</div>
+    <div class="value">{{ pending_assessments }}</div>
+  </div>
+  <div class="stat-card success">
+    <div class="label">Evaluations Done</div>
+    <div class="value">{{ total_evaluations_given }}</div>
+  </div>
+  <div class="stat-card info">
+    <div class="label">Average Score Given</div>
+    <div class="value">{{ average_score_given }}/100</div>
+  </div>
+</div>
+
+<!-- Assigned Students -->
+<div class="card mb-4">
+  <div class="card-header flex justify-between items-center">
+    <h3>Assigned Students</h3>
+  </div>
+  <div class="table-wrap">
+    {% if students %}
+    <table>
+      <thead>
+        <tr>
+          <th>Name</th>
+          <th>Company</th>
+          <th>Internship Period</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for s in students %}
+        <tr>
+          <td>{{ s.get_full_name|default:s.username }}</td>
+          <td>{% if s.profile %}{{ s.profile.company_name }}{% else %}—{% endif %}</td>
+          <td>
+            {% if s.profile %}
+              {{ s.profile.start_date }} → {{ s.profile.end_date }}
+            {% else %}—{% endif %}
+          </td>
+          <td>
+            <div class="btn-group">
+              <a href="{% url 'eval_form' s.pk %}" class="btn btn-sm btn-primary">Evaluate</a>
+              <a href="{% url 'results' s.pk %}" class="btn btn-sm btn-secondary">Results</a>
+            </div>
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+    {% else %}
+    <div class="empty">
+      <div class="icon">🎓</div>
+      <p>No students assigned yet.</p>
+    </div>
+    {% endif %}
+  </div>
+</div>
+
+<!-- Recent Evaluations by This Lecturer -->
+<div class="card">
+  <div class="card-header flex justify-between items-center">
+    <h3>Recent Evaluations</h3>
+  </div>
+  <div class="table-wrap">
+    {% if recent_evaluations %}
+    <table>
+      <thead>
+        <tr>
+          <th>Student</th>
+          <th>Date</th>
+          <th>Score</th>
+          <th>Details</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for eval in recent_evaluations %}
+        <tr>
+          <td>{{ eval.student.get_full_name|default:eval.student.username }}</td>
+          <td>{{ eval.submitted_at|date:"M d, Y" }}</td>
+          <td>
+            <div class="badge badge-success">{{ eval.total_score }}/100
+            </div>
+          </td>
+          <td>
+            <a href="{% url 'results' eval.student.id %}#eval-{{ eval.id }}" class="btn btn-sm btn-outline">Details</a>
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+    {% else %}
+    <div class="empty">
+      <div class="icon">📊</div>
+      <p>No evaluations submitted yet.</p>
+    </div>
+    {% endif %}
+  </div>
+</div>
+
+{% endblock %}

@@ -1,0 +1,65 @@
+{% extends 'base.html' %}
+{% block title %}Evaluate {{ student.get_full_name|default:student.username }} — InternTrack{% endblock %}
+{% block content %}
+
+<div class="page-header">
+  <h1>Evaluate Intern</h1>
+  <p>Submitting evaluation for <strong>{{ student.get_full_name|default:student.username }}</strong></p>
+</div>
+
+<div class="card" style="max-width:560px">
+  <form method="post">
+    {% csrf_token %}
+
+    <div style="background:var(--surface2);border-radius:8px;padding:1rem 1.25rem;margin-bottom:1.5rem;font-size:0.85rem;color:var(--muted)">
+      Score each criterion within its maximum. Total possible score: <strong style="color:var(--accent)">100 points</strong>
+    </div>
+
+    <div class="form-group">
+      <label>Punctuality <span style="color:var(--accent);font-weight:400">(0–20)</span></label>
+      <input type="number" name="punctuality" min="0" max="20"
+             value="{{ form.punctuality.value|default:'0' }}" required/>
+      {{ form.punctuality.errors }}
+    </div>
+
+    <div class="form-group">
+      <label>Technical Skills <span style="color:var(--accent);font-weight:400">(0–30)</span></label>
+      <input type="number" name="technical_skills" min="0" max="30"
+             value="{{ form.technical_skills.value|default:'0' }}" required/>
+      {{ form.technical_skills.errors }}
+    </div>
+
+    <div class="form-group">
+      <label>Communication <span style="color:var(--accent);font-weight:400">(0–20)</span></label>
+      <input type="number" name="communication" min="0" max="20"
+             value="{{ form.communication.value|default:'0' }}" required/>
+      {{ form.communication.errors }}
+    </div>
+
+    <div class="form-group">
+      <label>Initiative <span style="color:var(--accent);font-weight:400">(0–15)</span></label>
+      <input type="number" name="initiative" min="0" max="15"
+             value="{{ form.initiative.value|default:'0' }}" required/>
+      {{ form.initiative.errors }}
+    </div>
+
+    <div class="form-group">
+      <label>Teamwork <span style="color:var(--accent);font-weight:400">(0–15)</span></label>
+      <input type="number" name="teamwork" min="0" max="15"
+             value="{{ form.teamwork.value|default:'0' }}" required/>
+      {{ form.teamwork.errors }}
+    </div>
+
+    <div class="form-group">
+      <label>Overall Comments</label>
+      <textarea name="comments" rows="4" placeholder="Additional observations...">{{ form.comments.value|default:'' }}</textarea>
+    </div>
+
+    <div class="flex gap-2 mt-1">
+      <button type="submit" class="btn btn-primary">Submit Evaluation</button>
+      <a href="{% url 'dashboard' %}" class="btn btn-secondary">Cancel</a>
+    </div>
+  </form>
+</div>
+
+{% endblock %}

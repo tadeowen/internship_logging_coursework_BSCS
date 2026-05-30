@@ -1,0 +1,272 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block title %}Admin Dashboard — InternTrack{% endblock %}
+{% block extra_css %}
+<link href="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.min.css" rel="stylesheet">
+{% endblock %}
+{% block content %}
+
+<div class="page-header flex justify-between items-center">
+  <div>
+    <h1>Admin Dashboard</h1>
+    <p>Manage all users and monitor system activity</p>
+  </div>
+  <a href="{% url 'register_user' %}" class="btn btn-primary">+ Add User</a>
+</div>
+
+<!-- Statistics Overview -->
+<div class="stats-grid mb-4">
+  <div class="stat-card accent">
+    <div class="label">Students</div>
+    <div class="value">{{ students.count }}</div>
+    <div class="trend">↑ 5% this month</div>
+  </div>
+  <div class="stat-card blue">
+    <div class="label">Supervisors</div>
+    <div class="value">{{ supervisors.count }}</div>
+    <div class="trend">↑ 3% this month</div>
+  </div>
+  <div class="stat-card success">
+    <div class="label">Lecturers</div>
+    <div class="value">{{ lecturers.count }}</div>
+    <div class="trend">↑ 2% this month</div>
+  </div>
+  <div class="stat-card warning">
+    <div class="label">Total Users</div>
+    <div class="value">{{ students.count|add:supervisors.count|add:lecturers.count }}</div>
+    <div class="trend">Active accounts</div>
+  </div>
+</div>
+
+<!-- Charts Row -->
+<div class="grid md:grid-cols-2 gap-4 mb-4">
+  <!-- Evaluation Trends Chart -->
+  <div class="card">
+    <div class="card-header">
+      <h3>Evaluation Trends (Last 6 Months)</h3>
+    </div>
+    <div class="chart-container">
+      <canvas id="evaluationTrendsChart"></canvas>
+    </div>
+  </div>
+  
+  <!-- Activity Timeline Chart -->
+  <div class="card">
+    <div class="card-header">
+      <h3>Monthly Activity</h3>
+    </div>
+    <div class="chart-container">
+      <canvas id="activityChart"></canvas>
+    </div>
+  </div>
+</div>
+
+<!-- Student Performance Section -->
+<div class="card mb-4">
+  <div class="card-header flex justify-between items-center">
+    <h3>Top Performing Students</h3>
+    <a href="{% url 'all_evaluations' %}" class="btn btn-sm btn-secondary">View All</a>
+  </div>
+  <div class="table-wrap">
+    {% if students %}
+    <table>
+      <thead>
+        <tr>
+          <th>Rank</th>
+          <th>Student</th>
+          <th>Avg Score</th>
+          <th>Evaluations</th>
+          <th>Progress</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for student_data in top_students %}
+        <tr>
+          <td>{{ forloop.counter }}</td>
+          <td>
+            <div class="flex items-center">
+              <div class="avatar">{{
+                student_data.student.get_full_name|slice:":1"|upper
+              }}</div>
+              <div class="ml-2">
+                <div class="font-medium">{{
+                  student_data.student.get_full_name|default:student_data.student.username
+                }}</div>
+                <div class="text-xs text-muted">{{ student_data.student.username }}</div>
+              </div>
+            </div>
+          </td>
+          <td>
+            <div class="badge badge-success">{{ student_data.average_score }}/100
+            </div>
+          </td>
+          <td>{{ student_data.total_evaluations }}</td>
+          <td>
+            <div class="progress">
+              <div class="progress-bar" style="width: {{ student_data.progress_percentage }}%">
+                {{ student_data.progress_percentage }}%
+              </div>
+            </div>
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+    {% else %}
+      <div class="empty">
+        <div class="icon">📊</div>
+        <p>No evaluation data available yet.</p>
+      </div>
+    {% endif %}
+  </div>
+</div>
+
+<!-- Recent Log Entries -->
+<div class="card">
+  <div class="card-header flex justify-between items-center">
+    <h3>Recent Log Entries</h3>
+    <a href="{% url 'all_logs' %}" class="btn btn-sm btn-secondary">View All</a>
+  </div>
+  <div class="table-wrap">
+    {% if recent_logs %}
+    <table>
+      <thead>
+        <tr>
+          <th>Student</th>
+          <th>Date</th>
+          <th>Hours</th>
+          <th>Status</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for log in recent_logs %}
+        <tr>
+          <td>{{ log.student.get_full_name|default:log.student.username }}</td>
+          <td>{{ log.date }}</td>
+          <td>{{ log.hours_worked }}</td>
+          <td>
+            {% if log.status == 'approved' %}
+              <span class="badge badge-success">Approved</span>
+            {% elif log.status == 'rejected' %}
+              <span class="badge badge-error">Rejected</span>
+            {% else %}
+              <span class="badge badge-warning">Pending</span>
+            {% endif %}
+          </td>
+          <td>
+            {% if log.status == 'pending' and request.user.role == 'supervisor' %}
+              <a href="{% url 'approve_log' log.id %}" class="btn btn-sm btn-primary">Review</a>
+            {% endif %}
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+    {% else %}
+      <div class="empty">
+        <div class="icon">📝</div>
+        <p>No recent log entries.</p>
+      </div>
+    {% endif %}
+  </div>
+</div>
+
+{% endblock %}
+{% block extra_js %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<script>
+  document.addEventListener('DOMContentLoaded', function() {
+    // Evaluation Trends Chart
+    const evalCtx = document.getElementById('evaluationTrendsChart').getContext('2d');
+    const evalChart = new Chart(evalCtx, {
+      type: 'line',
+      data: {
+        labels: {% for trend in evaluation_trends %}"{{ trend.month }}"{% if not forloop.last %}, {% endif %}{% endfor %},
+        datasets: [{
+          label: 'Average Score',
+          data: {% for trend in evaluation_trends %}{{ trend.avg_score|floatformat:1 }}{% if not forloop.last %}, {% endif %}{% endfor %},
+          borderColor: '#3b82f6',
+          backgroundColor: 'rgba(59, 130, 246, 0.1)',
+          tension: 0.3,
+          fill: true
+        }, {
+          label: 'Evaluation Count',
+          data: {% for trend in evaluation_trends %}{{ trend.count }}{% if not forloop.last %}, {% endif %}{% endfor %},
+          borderColor: '#10b981',
+          backgroundColor: 'rgba(16, 185, 129, 0.1)',
+          tension: 0.3,
+          fill: true,
+          yAxisID: 'y1'
+        }]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+          legend: {
+            position: 'top',
+          }
+        },
+        scales: {
+          y: {
+            beginAtZero: true,
+            max: 100,
+            title: {
+              display: true,
+              text: 'Average Score'
+            }
+          },
+          y1: {
+            beginAtZero: true,
+            position: 'right',
+            grid: {
+              drawOnChartArea: false,
+            },
+            title: {
+              display: true,
+              text: 'Evaluation Count'
+            }
+          }
+        }
+      }
+    });
+    
+    // Activity Chart
+    const activityCtx = document.getElementById('activityChart').getContext('2d');
+    const activityChart = new Chart(activityCtx, {
+      type: 'bar',
+      data: {
+        labels: {% for activity in monthly_activity %}"{{ activity.month }}"{% if not forloop.last %}, {% endif %}{% endfor %},
+        datasets: [{
+          label: 'Approved',
+          data: [{% for activity in monthly_activity %}{% if activity.status == 'approved' %}{{ activity.count }}{% else %}0{% endif %}{% if not forloop.last %}, {% endif %}{% endfor %}],
+          backgroundColor: '#10b981'
+        }, {
+          label: 'Pending',
+          data: [{% for activity in monthly_activity %}{% if activity.status == 'pending' %}{{ activity.count }}{% else %}0{% endif %}{% if not forloop.last %}, {% endif %}{% endfor %}],
+          backgroundColor: '#f59e0b'
+        }, {
+          label: 'Rejected',
+          data: [{% for activity in monthly_activity %}{% if activity.status == 'rejected' %}{{ activity.count }}{% else %}0{% endif %}{% if not forloop.last %}, {% endif %}{% endfor %}],
+          backgroundColor: '#ef4444'
+        }]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+          legend: {
+            position: 'top',
+          }
+        },
+        scales: {
+          y: {
+            beginAtZero: true
+          }
+        }
+      }
+    });
+  });
+</script>
+{% endblock %}

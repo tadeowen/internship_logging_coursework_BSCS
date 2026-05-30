@@ -1,0 +1,22 @@
+{% extends 'base.html' %}
+{% block title %}Weekly Report - InternTrack{% endblock %}
+{% block content %}
+<div class="page-header">
+  <h1>Submit Weekly Report</h1>
+  <p>Summarize your weekly internship progress and attach supporting evidence.</p>
+</div>
+<div class="card" style="max-width:760px">
+  <form method="post" enctype="multipart/form-data">
+    {% csrf_token %}
+    {{ form.non_field_errors }}
+    {% for field in form %}
+      <div class="form-group">
+        <label for="{{ field.id_for_label }}">{{ field.label }}</label>
+        {{ field }}
+        {{ field.errors }}
+      </div>
+    {% endfor %}
+    <button class="btn btn-primary" type="submit">Submit Report</button>
+  </form>
+</div>
+{% endblock %}

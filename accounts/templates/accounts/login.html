@@ -1,0 +1,219 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Login — InternTrack</title>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet"/>
+  <style>
+    :root {
+      --bg: #0f0f0f; --surface: #1a1a1a; --surface2: #242424;
+      --border: #2e2e2e; --accent: #c8f045; --text: #f0f0f0;
+      --muted: #888; --danger: #f04545;
+    }
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      font-family: 'DM Sans', sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .login-wrap {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      min-height: 100vh;
+      width: 100%;
+    }
+
+    /* LEFT PANEL */
+    .login-left {
+      background: var(--surface);
+      border-right: 1px solid var(--border);
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      padding: 3rem;
+    }
+
+    .brand {
+      font-family: 'DM Serif Display', serif;
+      font-size: 1.5rem;
+      color: var(--accent);
+    }
+    .brand span { color: var(--text); }
+
+    .left-hero h2 {
+      font-family: 'DM Serif Display', serif;
+      font-size: 2.8rem;
+      font-weight: 400;
+      line-height: 1.15;
+      letter-spacing: -1px;
+      margin-bottom: 1rem;
+    }
+
+    .left-hero h2 em {
+      font-style: normal;
+      color: var(--accent);
+    }
+
+    .left-hero p {
+      color: var(--muted);
+      font-size: 0.95rem;
+      line-height: 1.6;
+      max-width: 340px;
+    }
+
+    .left-features {
+      display: flex;
+      flex-direction: column;
+      gap: 0.75rem;
+    }
+
+    .feature {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      font-size: 0.85rem;
+      color: var(--muted);
+    }
+
+    .feature-dot {
+      width: 7px; height: 7px;
+      border-radius: 50%;
+      background: var(--accent);
+      flex-shrink: 0;
+    }
+
+    /* RIGHT PANEL */
+    .login-right {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 3rem;
+    }
+
+    .login-box {
+      width: 100%;
+      max-width: 380px;
+    }
+
+    .login-box h3 {
+      font-family: 'DM Serif Display', serif;
+      font-size: 1.6rem;
+      font-weight: 400;
+      margin-bottom: 0.4rem;
+    }
+
+    .login-box p {
+      color: var(--muted);
+      font-size: 0.875rem;
+      margin-bottom: 2rem;
+    }
+
+    .form-group { margin-bottom: 1.1rem; }
+
+    label {
+      display: block;
+      font-size: 0.75rem;
+      font-weight: 600;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: var(--muted);
+      margin-bottom: 0.4rem;
+    }
+
+    input {
+      width: 100%;
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 0.7rem 0.9rem;
+      color: var(--text);
+      font-family: 'DM Sans', sans-serif;
+      font-size: 0.9rem;
+      outline: none;
+      transition: border-color 0.15s;
+    }
+    input:focus { border-color: var(--accent); }
+
+    .btn-login {
+      width: 100%;
+      background: var(--accent);
+      color: #0f0f0f;
+      font-family: 'DM Sans', sans-serif;
+      font-size: 0.9rem;
+      font-weight: 700;
+      padding: 0.75rem;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      margin-top: 0.5rem;
+      transition: background 0.15s;
+      letter-spacing: 0.02em;
+    }
+    .btn-login:hover { background: #d4f550; }
+
+    .error-msg {
+      background: rgba(240,69,69,0.1);
+      border: 1px solid rgba(240,69,69,0.25);
+      color: var(--danger);
+      font-size: 0.825rem;
+      padding: 0.65rem 0.9rem;
+      border-radius: 7px;
+      margin-bottom: 1.25rem;
+    }
+
+    @media (max-width: 700px) {
+      .login-wrap { grid-template-columns: 1fr; }
+      .login-left { display: none; }
+    }
+  </style>
+</head>
+<body>
+<div class="login-wrap">
+  <div class="login-left">
+    <div class="brand">Intern<span>Track</span></div>
+    <div class="left-hero">
+      <h2>Log, track &amp;<br><em>evaluate</em><br>internships.</h2>
+      <p>A unified platform for students, supervisors, lecturers, and administrators to manage the entire internship lifecycle.</p>
+    </div>
+    <div class="left-features">
+      <div class="feature"><div class="feature-dot"></div>Daily logbook submissions</div>
+      <div class="feature"><div class="feature-dot"></div>Supervisor approvals &amp; comments</div>
+      <div class="feature"><div class="feature-dot"></div>Structured performance evaluations</div>
+      <div class="feature"><div class="feature-dot"></div>Role-based access for all users</div>
+    </div>
+  </div>
+
+  <div class="login-right">
+    <div class="login-box">
+      <h3>Welcome back</h3>
+      <p>Sign in to your account to continue.</p>
+
+      {% if messages %}
+        {% for msg in messages %}
+          <div class="error-msg">{{ msg }}</div>
+        {% endfor %}
+      {% endif %}
+
+      <form method="post">
+        {% csrf_token %}
+        <div class="form-group">
+          <label>Username</label>
+          <input type="text" name="username" placeholder="Enter your username" autofocus required/>
+        </div>
+        <div class="form-group">
+          <label>Password</label>
+          <input type="password" name="password" placeholder="••••••••" required/>
+        </div>
+        <button type="submit" class="btn-login">Sign In →</button>
+      </form>
+    </div>
+  </div>
+</div>
+</body>
+</html>

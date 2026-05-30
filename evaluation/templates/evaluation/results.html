@@ -1,0 +1,88 @@
+{% extends 'base.html' %}
+{% block title %}Results — {{ student.get_full_name|default:student.username }}{% endblock %}
+{% block content %}
+
+<div class="page-header flex justify-between items-center">
+  <div>
+    <h1>{{ student.get_full_name|default:student.username }}</h1>
+    <p>Evaluation results — {{ evaluations.count }} evaluation{{ evaluations.count|pluralize }} submitted</p>
+  </div>
+   <a href="{% url 'eval_form' student.pk %}" class="btn btn-primary">+ Evaluate</a>
+</div>
+
+{% if evaluations %}
+  {% for ev in evaluations %}
+  <div class="card mb-2">
+    <div class="flex justify-between items-center mb-1">
+      <div>
+        <div class="card-title" style="margin-bottom:0.2rem">
+          Evaluated by {{ ev.evaluator.get_full_name|default:ev.evaluator.username }}
+          <span class="badge badge-{{ ev.evaluator_type }}" style="margin-left:0.5rem">{{ ev.evaluator_type }}</span>
+        </div>
+        <div style="font-size:0.8rem;color:var(--muted)">{{ ev.submitted_at|date:"F d, Y" }}</div>
+      </div>
+      <div class="score-circle">
+        <div class="num">{{ ev.total_score }}</div>
+        <div class="denom">/ 100</div>
+      </div>
+    </div>
+
+    <!-- SCORE BARS -->
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem;margin-top:1.25rem">
+
+      <div>
+        <div class="score-bar-wrap">
+          <div class="score-bar-label"><span>Punctuality</span><span>{{ ev.punctuality }}/20</span></div>
+          <div class="score-bar"><div class="score-bar-fill" style="width:{% widthratio ev.punctuality 20 100 %}%"></div></div>
+        </div>
+      </div>
+
+      <div>
+        <div class="score-bar-wrap">
+          <div class="score-bar-label"><span>Technical Skills</span><span>{{ ev.technical_skills }}/30</span></div>
+          <div class="score-bar"><div class="score-bar-fill" style="width:{% widthratio ev.technical_skills 30 100 %}%"></div></div>
+        </div>
+      </div>
+
+      <div>
+        <div class="score-bar-wrap">
+          <div class="score-bar-label"><span>Communication</span><span>{{ ev.communication }}/20</span></div>
+          <div class="score-bar"><div class="score-bar-fill" style="width:{% widthratio ev.communication 20 100 %}%"></div></div>
+        </div>
+      </div>
+
+      <div>
+        <div class="score-bar-wrap">
+          <div class="score-bar-label"><span>Initiative</span><span>{{ ev.initiative }}/15</span></div>
+          <div class="score-bar"><div class="score-bar-fill" style="width:{% widthratio ev.initiative 15 100 %}%"></div></div>
+        </div>
+      </div>
+
+      <div>
+        <div class="score-bar-wrap">
+          <div class="score-bar-label"><span>Teamwork</span><span>{{ ev.teamwork }}/15</span></div>
+          <div class="score-bar"><div class="score-bar-fill" style="width:{% widthratio ev.teamwork 15 100 %}%"></div></div>
+        </div>
+      </div>
+
+    </div>
+
+    {% if ev.comments %}
+    <div style="margin-top:1.25rem;padding-top:1rem;border-top:1px solid var(--border)">
+      <div style="font-size:0.75rem;font-weight:600;letter-spacing:0.08em;text-transform:uppercase;color:var(--muted);margin-bottom:0.4rem">Comments</div>
+      <div style="font-size:0.9rem;line-height:1.6;color:var(--text)">{{ ev.comments }}</div>
+    </div>
+    {% endif %}
+  </div>
+  {% endfor %}
+
+{% else %}
+  <div class="card">
+    <div class="empty">
+      <div class="icon">📊</div>
+      <p>No evaluations submitted for this student yet.</p>
+    </div>
+  </div>
+{% endif %}
+
+{% endblock %}

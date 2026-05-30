@@ -1,0 +1,27 @@
+{% extends 'base.html' %}
+{% block title %}Visit Schedules - InternTrack{% endblock %}
+{% block content %}
+<div class="page-header flex justify-between items-center">
+  <div><h1>Visit Schedules</h1><p>University supervisor placement visits and outcomes.</p></div>
+  {% if user.role == 'lecturer' %}<a class="btn btn-primary" href="{% url 'visit_create' %}">Schedule Visit</a>{% endif %}
+</div>
+<div class="card table-wrap">
+  <table>
+    <thead><tr><th>Student</th><th>Supervisor</th><th>Date</th><th>Time</th><th>Status</th><th>Agenda</th></tr></thead>
+    <tbody>
+      {% for visit in visits %}
+      <tr>
+        <td>{{ visit.student.full_name }}</td>
+        <td>{{ visit.university_supervisor.full_name }}</td>
+        <td>{{ visit.visit_date }}</td>
+        <td>{{ visit.visit_time|default:"-" }}</td>
+        <td>{{ visit.status }}</td>
+        <td>{{ visit.agenda|truncatechars:80 }}</td>
+      </tr>
+      {% empty %}
+      <tr><td colspan="6" class="empty">No visits scheduled yet.</td></tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% endblock %}

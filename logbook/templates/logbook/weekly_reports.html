@@ -1,0 +1,29 @@
+{% extends 'base.html' %}
+{% block title %}Weekly Reports - InternTrack{% endblock %}
+{% block content %}
+<div class="page-header flex justify-between items-center">
+  <div>
+    <h1>Weekly Reports</h1>
+    <p>Track weekly submissions, reviews, and recommendations.</p>
+  </div>
+  {% if user.role == 'student' %}<a class="btn btn-primary" href="{% url 'weekly_report_create' %}">New Report</a>{% endif %}
+</div>
+<div class="card table-wrap">
+  <table>
+    <thead><tr><th>Student</th><th>Week</th><th>Status</th><th>Comment</th><th></th></tr></thead>
+    <tbody>
+      {% for report in reports %}
+      <tr>
+        <td>{{ report.student.full_name }}</td>
+        <td>{{ report.week_start }} to {{ report.week_end }}</td>
+        <td><span class="badge badge-{{ report.status }}">{{ report.status }}</span></td>
+        <td>{{ report.supervisor_comment|default:"-" }}</td>
+        <td>{% if user.role != 'student' %}<a class="btn btn-sm btn-secondary" href="{% url 'weekly_report_review' report.id %}">Review</a>{% endif %}</td>
+      </tr>
+      {% empty %}
+      <tr><td colspan="5" class="empty">No weekly reports yet.</td></tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% endblock %}

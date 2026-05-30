@@ -1,0 +1,25 @@
+{% extends 'base.html' %}
+{% block title %}Form - InternTrack{% endblock %}
+{% block content %}
+<div class="page-header">
+  <h1>{{ view.page_title|default:"Record" }}</h1>
+  <p>Complete the form and submit to save changes.</p>
+</div>
+<div class="card" style="max-width:720px">
+  <form method="post" enctype="multipart/form-data">
+    {% csrf_token %}
+    {{ form.non_field_errors }}
+    {% for field in form %}
+      <div class="form-group">
+        <label for="{{ field.id_for_label }}">{{ field.label }}</label>
+        {{ field }}
+        {{ field.errors }}
+      </div>
+    {% endfor %}
+    <div class="flex gap-2 mt-1">
+      <button class="btn btn-primary" type="submit">Save</button>
+      <a class="btn btn-secondary" href="{% url 'dashboard' %}">Cancel</a>
+    </div>
+  </form>
+</div>
+{% endblock %}

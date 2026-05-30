@@ -1,0 +1,20 @@
+{% extends 'base.html' %}
+{% block title %}Attendance - InternTrack{% endblock %}
+{% block content %}
+<div class="page-header flex justify-between items-center">
+  <div><h1>Attendance</h1><p>Daily attendance tracking for internship placements.</p></div>
+  {% if user.role == 'admin' or user.role == 'supervisor' %}<a class="btn btn-primary" href="{% url 'attendance_create' %}">Record Attendance</a>{% endif %}
+</div>
+<div class="card table-wrap">
+  <table>
+    <thead><tr><th>Student</th><th>Date</th><th>Status</th><th>Check In</th><th>Check Out</th><th>Remarks</th></tr></thead>
+    <tbody>
+    {% for record in attendance_records %}
+      <tr><td>{{ record.student.full_name }}</td><td>{{ record.date }}</td><td>{{ record.status }}</td><td>{{ record.check_in|default:"-" }}</td><td>{{ record.check_out|default:"-" }}</td><td>{{ record.remarks|default:"-" }}</td></tr>
+    {% empty %}
+      <tr><td colspan="6" class="empty">No attendance records yet.</td></tr>
+    {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% endblock %}
