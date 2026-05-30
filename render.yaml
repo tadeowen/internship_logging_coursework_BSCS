@@ -1,0 +1,32 @@
+databases:
+  - name: internship-system-db
+    plan: free
+    databaseName: internship_system
+    user: internship_user
+
+services:
+  - type: web
+    name: internship-system
+    runtime: python
+    plan: free
+    buildCommand: "pip install -r requirements.txt && python manage.py collectstatic --noinput && python manage.py migrate"
+    startCommand: "gunicorn core.wsgi:application"
+    envVars:
+      - key: SECRET_KEY
+        generateValue: true
+      - key: DEBUG
+        value: "False"
+      - key: ALLOWED_HOSTS
+        value: "internship-system.onrender.com"
+      - key: CSRF_TRUSTED_ORIGINS
+        value: "https://internship-system.onrender.com"
+      - key: SECURE_SSL_REDIRECT
+        value: "True"
+      - key: SESSION_COOKIE_SECURE
+        value: "True"
+      - key: CSRF_COOKIE_SECURE
+        value: "True"
+      - key: DATABASE_URL
+        fromDatabase:
+          name: internship-system-db
+          property: connectionString

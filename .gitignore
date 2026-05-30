@@ -1,10 +1,26 @@
+# Python
 venv/
+.venv/
+env/
 __pycache__/
-*.pyc
+**/__pycache__/
+*.py[cod]
+*.pyo
+
+# Django/local runtime
 db.sqlite3
+*.sqlite3
 .env
 media/
 staticfiles/
+
+# Logs and test output
+*.log
+.coverage
+htmlcov/
+.pytest_cache/
+
+# Editors and OS files
 .idea/
 .vscode/
-
+.DS_Store
