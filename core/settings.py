@@ -17,7 +17,7 @@ def env_bool(name, default=False):
 # Core security settings
 SECRET_KEY = config('SECRET_KEY')
 DEBUG = env_bool('DEBUG', default=False)
-ALLOWED_HOSTS = config('ALLOWED_HOSTS', default='localhost,127.0.0.1', cast=Csv())
+ALLOWED_HOSTS = config('ALLOWED_HOSTS', default='internship-logging-coursework-bscs.onrender.com,localhost,127.0.0.1', cast=Csv())
 CSRF_TRUSTED_ORIGINS = config('CSRF_TRUSTED_ORIGINS', default='', cast=Csv())
 
 
