@@ -1,12 +1,19 @@
 from rest_framework import generics, permissions, filters
-from ..models import User, InternshipProfile
-from .serializers import UserSerializer, InternshipProfileSerializer
+from rest_framework.views import APIView
+from rest_framework.response import Response
+from rest_framework import status
+from rest_framework.authtoken.models import Token
+from django.contrib.auth import authenticate
+
+from ..models import User, InternshipProfile, InternshipPlacement
+from .serializers import UserSerializer, InternshipProfileSerializer, InternshipPlacementSerializer
 
 try:
     from django_filters.rest_framework import DjangoFilterBackend
     FILTER_BACKENDS = [DjangoFilterBackend, filters.SearchFilter, filters.OrderingFilter]
 except ImportError:
     FILTER_BACKENDS = [filters.SearchFilter, filters.OrderingFilter]
+
 
 class UserListCreateView(generics.ListCreateAPIView):
     queryset = User.objects.all()
@@ -20,9 +27,9 @@ class UserListCreateView(generics.ListCreateAPIView):
 
     def get_permissions(self):
         if self.request.method == 'POST':
-            # Only admins can create users
             return [permissions.IsAuthenticated(), permissions.IsAdminUser()]
         return [permissions.IsAuthenticated()]
+
 
 class UserRetrieveUpdateDestroyView(generics.RetrieveUpdateDestroyAPIView):
     queryset = User.objects.all()
@@ -31,9 +38,9 @@ class UserRetrieveUpdateDestroyView(generics.RetrieveUpdateDestroyAPIView):
 
     def get_permissions(self):
         if self.request.method in ['PUT', 'PATCH', 'DELETE']:
-            # Only admins can update/delete users
             return [permissions.IsAuthenticated(), permissions.IsAdminUser()]
         return [permissions.IsAuthenticated()]
+
 
 class InternshipProfileListCreateView(generics.ListCreateAPIView):
     queryset = InternshipProfile.objects.all()
@@ -47,9 +54,9 @@ class InternshipProfileListCreateView(generics.ListCreateAPIView):
 
     def get_permissions(self):
         if self.request.method == 'POST':
-            # Only admins can create internship profiles
             return [permissions.IsAuthenticated(), permissions.IsAdminUser()]
         return [permissions.IsAuthenticated()]
+
 
 class InternshipProfileRetrieveUpdateDestroyView(generics.RetrieveUpdateDestroyAPIView):
     queryset = InternshipProfile.objects.all()
@@ -58,6 +65,95 @@ class InternshipProfileRetrieveUpdateDestroyView(generics.RetrieveUpdateDestroyA
 
     def get_permissions(self):
         if self.request.method in ['PUT', 'PATCH', 'DELETE']:
-            # Only admins can update/delete internship profiles
             return [permissions.IsAuthenticated(), permissions.IsAdminUser()]
         return [permissions.IsAuthenticated()]
+
+
+class PlacementListCreateView(generics.ListCreateAPIView):
+    serializer_class = InternshipPlacementSerializer
+    permission_classes = [permissions.IsAuthenticated]
+
+    def get_queryset(self):
+        user = self.request.user
+        if user.role == 'admin':
+            return InternshipPlacement.objects.all()
+        elif user.role == 'student':
+            return InternshipPlacement.objects.filter(student=user)
+        elif user.role == 'supervisor':
+            return InternshipPlacement.objects.filter(company_supervisor=user)
+        elif user.role == 'lecturer':
+            return InternshipPlacement.objects.filter(university_supervisor=user)
+        return InternshipPlacement.objects.none()
+
+    def perform_create(self, serializer):
+        serializer.save()
+
+
+class PlacementRetrieveUpdateDestroyView(generics.RetrieveUpdateDestroyAPIView):
+    serializer_class = InternshipPlacementSerializer
+    permission_classes = [permissions.IsAuthenticated]
+
+    def get_queryset(self):
+        user = self.request.user
+        if user.role == 'admin':
+            return InternshipPlacement.objects.all()
+        elif user.role == 'student':
+            return InternshipPlacement.objects.filter(student=user)
+        elif user.role == 'supervisor':
+            return InternshipPlacement.objects.filter(company_supervisor=user)
+        elif user.role == 'lecturer':
+            return InternshipPlacement.objects.filter(university_supervisor=user)
+        return InternshipPlacement.objects.none()
+
+
+class UserRegistrationView(generics.CreateAPIView):
+    serializer_class = UserSerializer
+    permission_classes = [permissions.AllowAny]
+
+    def create(self, request, *args, **kwargs):
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        password = request.data.get('password', '')
+        user = serializer.save()
+        if password:
+            user.set_password(password)
+            user.save()
+        token, _ = Token.objects.get_or_create(user=user)
+        return Response({
+            'token': token.key,
+            'user': UserSerializer(user).data,
+        }, status=status.HTTP_201_CREATED)
+
+
+class UserLoginView(APIView):
+    permission_classes = [permissions.AllowAny]
+
+    def post(self, request):
+        username = request.data.get('username')
+        password = request.data.get('password')
+        user = authenticate(request=request, username=username, password=password)
+        if not user:
+            return Response({'detail': 'Invalid credentials'}, status=status.HTTP_400_BAD_REQUEST)
+        token, _ = Token.objects.get_or_create(user=user)
+        return Response({
+            'token': token.key,
+            'user': UserSerializer(user).data,
+        })
+
+
+class CurrentUserView(APIView):
+    permission_classes = [permissions.IsAuthenticated]
+
+    def get(self, request):
+        return Response(UserSerializer(request.user).data)
+
+
+class LogoutView(APIView):
+    permission_classes = [permissions.IsAuthenticated]
+
+    def post(self, request):
+        try:
+            request.user.auth_token.delete()
+        except Exception:
+            pass
+        return Response(status=status.HTTP_204_NO_CONTENT)

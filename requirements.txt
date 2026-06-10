@@ -1,13 +1,11 @@
+Django==5.2.1
 asgiref==3.8.1
 dj-database-url==2.3.0
-Django==5.2.1
+django-cors-headers==4.9.0
 django-filter==25.1
 djangorestframework==3.16.0
 gunicorn==23.0.0
-packaging==26.2
-psycopg==3.2.9
-psycopg-binary==3.2.9
+psycopg[binary]==3.2.9
 python-decouple==3.8
 sqlparse==0.5.3
-typing_extensions==4.15.0
 whitenoise==6.9.0

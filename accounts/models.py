@@ -4,6 +4,7 @@ from django.contrib.auth.models import AbstractUser
 from django.core.exceptions import ValidationError
 from django.db import models
 
+
 class User(AbstractUser):
     ROLE_CHOICES = (
         ('admin', 'Admin'),
@@ -151,7 +152,6 @@ class InternshipPlacement(models.Model):
 
 
 class InternshipProfile(models.Model):
-    """Legacy profile kept for compatibility with the original coursework screens."""
     student = models.OneToOneField(User, on_delete=models.CASCADE, related_name='profile')
     supervisor = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, related_name='supervised_students')
     lecturer = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, related_name='assigned_students')
